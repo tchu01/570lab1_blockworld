@@ -5,6 +5,7 @@ class BlockWorld:
         self.filename = sys.argv[1]
         self.init_clear = []
         self.init_on = {}
+        self.init_block = set()
         self.goal_clear = []
         self.goal_on = {}
 
@@ -13,7 +14,7 @@ class BlockWorld:
             while f.readline() != 'INIT\n':
                 pass
 
-            print("Reading initial conditions")
+            # print("Reading initial conditions")
             content = '.'
             while content != 'GOAL\n':
                 content = f.readline()
@@ -22,12 +23,15 @@ class BlockWorld:
                     if split[0] == 'ON':
                         if len(split) == 3:
                             self.init_on[split[1]] = split[2]
+                            self.init_block.add(split[1])
+                            self.init_block.add(split[2])
                         else:
                             print("Incorrect ON condition")
                             print(split)
                     elif split[0] == 'CLEAR':
                         if len(split) == 2:
                             self.init_clear.append(split[1])
+                            self.init_block.add(split[1])
                         else:
                             print("Incorrect CLEAR condition")
                             print(split)
@@ -35,7 +39,7 @@ class BlockWorld:
                     print("len(split) <= 0")
 
 
-            print("Reading goal conditions")
+            # print("Reading goal conditions")
             content = '.'
             while content != '':
                 content = f.readline()
@@ -54,55 +58,52 @@ class BlockWorld:
                             print("Incorrect CLEAR condition")
                             print(split)
 
-    def can_move(self, b, x, y, clear, on):
-        if b not in clear or on[b] != x or y not in clear:
-            return False
+            self.init_block.remove('Table')
 
-        return True
+    def can_move(self, b, x, y, block, clear, on):
+        if b in block and y in block and b in clear and y in clear and on[b] == x and b != x and b!= y:
+            return True
 
-    def can_move_to_table(self, b, x, clear, on):
-        if b not in clear or on[b] != x:
-            return False
-
-        return True
+        return False
 
     def move(self, b, x, y):
         '''
         Move block B which is currently on top of block X to be on top of block Y.
 
         PRECONDITIONS:
+        b != x != y
+        b is block
+        y is block
         b is clear
-        b is on top of x
         y is clear
+        b is on top of x
 
         POSTCONDITIONS:
         b is now on top of y
         y is now no longer clear
-        x is now clear
-
-        :param b:
-        :param x:
-        :param y:
-        :return:
+        x is now clear (if it is not table)
         '''
 
         return
+
+    def can_move_to_table(self, b, x, block, clear, on):
+        if b in block and b in clear and on[b] == x:
+            return True
+
+        return False
 
     def move_to_table(self, b, x):
         '''
         Move block B which is currently on top of block X to the table.
 
         PRECONDITIONS:
+        b is block
         b is clear
         b is on top of x
 
         POSTCONDITIONS:
         b is now on table
-        x is now clear
-
-        :param b:
-        :param x:
-        :return:
+        x is now clear (if it is not table)
         '''
 
         return
