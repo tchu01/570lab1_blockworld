@@ -1,0 +1,11 @@
+#EXAMPLE file for block world input
+#Foaad Khosmood
+INIT
+ON C Table
+ON B C
+ON A B
+CLEAR A
+#Now the Goal
+GOAL
+ON B Table
+CLEAR B

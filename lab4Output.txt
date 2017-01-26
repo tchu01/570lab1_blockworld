@@ -1,0 +1,10 @@
+Macintosh-55:Downloads foaad$ python3 blocks.py lab4Input1.txt 
+MoveToTable(A, B)
+MoveToTable(B, C)
+Macintosh-55:Downloads foaad$ python3 blocks.py lab4Input2.txt 
+MoveToTable(E, D)
+MoveToTable(D, A)
+Macintosh-55:Downloads foaad$ python3 blocks.py lab4Input3.txt 
+MoveToTable(C, A)
+Move(D, B, C)
+
