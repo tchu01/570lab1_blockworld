@@ -54,6 +54,18 @@ class BlockWorld:
                             print("Incorrect CLEAR condition")
                             print(split)
 
+    def can_move(self, b, x, y, clear, on):
+        if b not in clear or on[b] != x or y not in clear:
+            return False
+
+        return True
+
+    def can_move_to_table(self, b, x, clear, on):
+        if b not in clear or on[b] != x:
+            return False
+
+        return True
+
     def move(self, b, x, y):
         '''
         Move block B which is currently on top of block X to be on top of block Y.
