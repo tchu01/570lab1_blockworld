@@ -13,6 +13,7 @@ class BlockWorld:
         self.init_block = set()
         self.goal_clear = set()
         self.goal_on = {}
+        self.num_goals = 0
 
     def parse_input(self):
         with open(self.filename, 'r') as f:
@@ -50,12 +51,14 @@ class BlockWorld:
                     if split[0] == 'ON':
                         if len(split) == 3:
                             self.goal_on[split[1]] = split[2]
+                            self.num_goals += 1
                         else:
                             print("Incorrect ON condition")
                             print(split)
                     elif split[0] == 'CLEAR':
                         if len(split) == 2:
                             self.goal_clear.add(split[1])
+                            self.num_goals += 1
                         else:
                             print("Incorrect CLEAR condition")
                             print(split)
@@ -97,6 +100,7 @@ class BlockWorld:
             if x != 'Table':
                 current_clear.add(x)
 
+            print("Move succeeded")
             return self.MOVE_SUCCESS, current_clear, current_on
         else:
             print("Move failed")
@@ -125,28 +129,63 @@ class BlockWorld:
         x is now clear (if it is not table)
         '''
 
-        if self.can_move_to_table(b, x, y, current_clear, current_on):
+        if self.can_move_to_table(b, x, current_clear, current_on):
             current_on[b] = 'Table'
             if x != 'Table':
                 current_clear.add(x)
 
+            print("Move_to_table succeeded")
             return self.MOVE_TO_TABLE_SUCCESS, current_clear, current_on
         else:
-            print("Move failed")
+            print("Move_to_table failed")
             return self.MOVE_TO_TABLE_FAIL, current_clear, current_on
 
-    def solution(self):
+    def goal_check(self, current_clear, current_on):
+        if self.goal_clear.issubset(current_clear):
+            goal_on_set = set(self.goal_on.items())
+            current_on_set = set(current_on.items())
+            if goal_on_set.issubset(current_on_set):
+                print("GOAL MET")
+                return True
+
+        print("GOAL NOT MET")
+        return False
+
+    def find_solution(self):
         if len(self.goal_on) == 0 and len(self.goal_clear) == 0:
             print("No goal conditions!")
             return
 
+        if self.goal_check(self.init_clear, self.init_on):
+            print("Initial conditions meet goal conditions")
 
+        moves, solution = self.find_shortest_path(self.init_clear, self.init_on)
 
+    def find_shortest_path(self, current_clear, current_on):
+        open = []
+        closed = []
 
+    def possible_moves(self, current_clear, current_on):
+        pass
+
+    def f_score(self, num_moves, current_clear, current_on):
+        return num_moves + self.heuristic(current_clear, current_on)
+
+    def heuristic(self, current_clear, current_on):
+        return self.num_goals - self.num_goals_met(current_clear, current_on)
+
+    def num_goals_met(self, current_clear, current_on):
+        set_clear_diff = self.goal_clear.difference(current_clear)
+
+        goal_on_set = set(self.goal_on.items())
+        current_on_set = set(current_on.items())
+        set_on_diff = goal_on_set.difference(current_on_set)
+
+        return len(set_clear_diff) + len(set_on_diff)
 
     def run(self):
         self.parse_input()
-        self.solution()
+        self.find_solution()
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
