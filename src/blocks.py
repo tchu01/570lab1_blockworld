@@ -165,6 +165,8 @@ class BlockWorld:
         open = []
         closed = []
 
+        return None, None
+
     def possible_moves(self, current_clear, current_on):
         pass
 
