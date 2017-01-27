@@ -1,12 +1,17 @@
-import sys, re
+import sys, copy
 
 class BlockWorld:
+    MOVE_FAIL = 0
+    MOVE_SUCCESS = 1
+    MOVE_TO_TABLE_FAIL = 2
+    MOVE_TO_TABLE_SUCCESS = 3
+
     def __init__(self):
         self.filename = sys.argv[1]
-        self.init_clear = []
+        self.init_clear = set()
         self.init_on = {}
         self.init_block = set()
-        self.goal_clear = []
+        self.goal_clear = set()
         self.goal_on = {}
 
     def parse_input(self):
@@ -30,14 +35,11 @@ class BlockWorld:
                             print(split)
                     elif split[0] == 'CLEAR':
                         if len(split) == 2:
-                            self.init_clear.append(split[1])
+                            self.init_clear.add(split[1])
                             self.init_block.add(split[1])
                         else:
                             print("Incorrect CLEAR condition")
                             print(split)
-                else:
-                    print("len(split) <= 0")
-
 
             # print("Reading goal conditions")
             content = '.'
@@ -53,65 +55,92 @@ class BlockWorld:
                             print(split)
                     elif split[0] == 'CLEAR':
                         if len(split) == 2:
-                            self.goal_clear.append(split[1])
+                            self.goal_clear.add(split[1])
                         else:
                             print("Incorrect CLEAR condition")
                             print(split)
 
             self.init_block.remove('Table')
 
-    def can_move(self, b, x, y, block, clear, on):
-        if b in block and y in block and b in clear and y in clear and on[b] == x and b != x and b!= y:
-            return True
-
-        return False
-
-    def move(self, b, x, y):
+    def can_move(self, b, x, y, current_clear, current_on):
         '''
-        Move block B which is currently on top of block X to be on top of block Y.
-
-        PRECONDITIONS:
-        b != x != y
+        Preconditions:
         b is block
         y is block
         b is clear
         y is clear
         b is on top of x
-
-        POSTCONDITIONS:
-        b is now on top of y
-        y is now no longer clear
-        x is now clear (if it is not table)
+        b != x != y
         '''
 
-        return
-
-    def can_move_to_table(self, b, x, block, clear, on):
-        if b in block and b in clear and on[b] == x:
+        if b in self.init_block and y in self.init_block and b in current_clear and y in current_clear and \
+                        current_on[b] == x and b != x and b!= y:
             return True
 
         return False
 
-    def move_to_table(self, b, x):
+    def move(self, b, x, y, current_clear, current_on):
         '''
-        Move block B which is currently on top of block X to the table.
+        Move block B which is currently on top of block X to be on top of block Y.
 
-        PRECONDITIONS:
-        b is block
-        b is clear
-        b is on top of x
+        can_move checks Preconditions
 
-        POSTCONDITIONS:
-        b is now on table
+        Postconditions:
+        b is now on top of y instead of x
+        y is now no longer clear
         x is now clear (if it is not table)
         '''
 
-        return
+        if self.can_move(b, x, y, current_clear, current_on):
+            current_on[b] = y
+            current_clear.remove(y)
+            if x != 'Table':
+                current_clear.add(x)
+
+            return self.MOVE_SUCCESS, current_clear, current_on
+        else:
+            print("Move failed")
+            return self.MOVE_FAIL, current_clear, current_on
+
+    def can_move_to_table(self, b, x, current_clear, current_on):
+        '''
+        Preconditions:
+        b is block
+        b is clear
+        b is on top of x
+        '''
+        if b in self.init_block and b in current_clear and current_on[b] == x:
+            return True
+
+        return False
+
+    def move_to_table(self, b, x, current_clear, current_on):
+        '''
+        Move block B which is currently on top of block X to the table.
+
+        can_move_to_table checks Preconditions
+
+        Postconditions:
+        b is now on table instead of x
+        x is now clear (if it is not table)
+        '''
+
+        if self.can_move_to_table(b, x, y, current_clear, current_on):
+            current_on[b] = 'Table'
+            if x != 'Table':
+                current_clear.add(x)
+
+            return self.MOVE_TO_TABLE_SUCCESS, current_clear, current_on
+        else:
+            print("Move failed")
+            return self.MOVE_TO_TABLE_FAIL, current_clear, current_on
 
     def solution(self):
         if len(self.goal_on) == 0 and len(self.goal_clear) == 0:
             print("No goal conditions!")
             return
+
+
 
 
 
