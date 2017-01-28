@@ -89,7 +89,6 @@ class BlockWorld:
             if x != self.TABLE:
                 current_clear.add(x)
 
-            # print('Move succeeded')
             return self.MOVE_SUCCESS, current_clear, current_on
         else:
             print('Move failed')
@@ -102,6 +101,7 @@ class BlockWorld:
         b is clear
         b is on top of x
         '''
+
         if b in self.init_block and b in current_clear and current_on[b] == x and x != self.TABLE:
             return True
 
@@ -123,7 +123,6 @@ class BlockWorld:
             if x != self.TABLE:
                 current_clear.add(x)
 
-            # print('Move_to_table succeeded')
             return self.MOVE_TO_TABLE_SUCCESS, current_clear, current_on
         else:
             print('Move_to_table failed')
@@ -134,10 +133,8 @@ class BlockWorld:
             goal_on_set = set(self.goal_on.items())
             current_on_set = set(current_on.items())
             if goal_on_set.issubset(current_on_set):
-                # print('Goal_check MET')
                 return True
 
-        # print('Goal_check NOT MET')
         return False
 
     def num_goals_met(self, current_clear, current_on):
@@ -151,7 +148,6 @@ class BlockWorld:
 
     def heuristic(self, current_clear, current_on):
         goals_met = self.num_goals_met(current_clear, current_on)
-        # print('Num goals: ' + str(self.num_goals) + ' | goals met: ' + str(goals_met))
         return self.num_goals - goals_met
 
     def f_score(self, num_moves, current_clear, current_on):
@@ -175,7 +171,6 @@ class BlockWorld:
 
     def get_children(self, current_clear, current_on, current_completed_moves, num_moves):
         moves = self.possible_moves(current_clear, current_on, current_completed_moves)
-        # print('possible moves: ' + str(moves))
         children = {}
 
         for move in moves:
@@ -204,59 +199,47 @@ class BlockWorld:
         sorted_children.sort(key = lambda x: x[0])
         return sorted_children
 
+    def find_shortest_path(self, current_clear, current_on, current_completed_moves, num_moves, best_moves):
+        if num_moves >= best_moves:
+            return self.CONT, num_moves, None
 
-
-
-    def find_shortest_path(self, current_clear, current_on, current_completed_moves, num_moves):
-        print()
-        print('Current fscore: ' +  str(self.f_score(num_moves, current_clear, current_on)))
-        print('Current clear: ' + str(current_clear))
-        print('Current on: ' + str(current_on))
-        print('Current completed moves: ' + str(current_completed_moves))
-        print('Current num moves: ' + str(num_moves))
+        # print()
+        # print('Current fscore: ' +  str(self.f_score(num_moves, current_clear, current_on)))
+        # print('Current clear: ' + str(current_clear))
+        # print('Current on: ' + str(current_on))
+        # print('Current completed moves: ' + str(current_completed_moves))
+        # print('Current num moves: ' + str(num_moves))
 
         children = self.get_children(current_clear, current_on, current_completed_moves, num_moves)
         sorted_children = self.sort_children_by_f(children)
 
-        for child in sorted_children:
-            print('Child: ' + str(child[0]) + ' | ' + str(child[3]))
-        print()
+        # for child in sorted_children:
+        #     print('Child: ' + str(child[0]) + ' | ' + str(child[3]))
+        # print()
 
         best_status = self.CONT
-        best_moves = math.inf
         best_solution = []
 
         for child in sorted_children:
-            print('Picking child: ' + str(child[4]) + ' at ' + str(num_moves))
+            # print('Picking child: ' + str(child[4]) + ' at ' + str(num_moves))
             child_num_moves = num_moves + 1
             child_clear = child[1]
             child_on = child[2]
             child_completed_moves = child[3]
 
             if self.goal_check(child_clear, child_on):
-                print("AT GOAL")
+                # print('AT GOAL... num_moves: ' + str(child_num_moves) + ' while best: ' + str(best_moves))
                 return self.DONE, child_num_moves, child_completed_moves
-
             else:
                 status, moves, solution = self.find_shortest_path(child_clear, child_on, child_completed_moves,
-                                                              child_num_moves)
+                                                              child_num_moves, best_moves)
 
-                if status == self.DONE:
-                    return status, moves, solution
-
-                if moves < best_moves:
+                if status == self.DONE and moves < best_moves:
                     best_moves = moves
                     best_solution = solution
                     best_status = self.DONE
 
-
-
         return best_status, best_moves, best_solution
-
-
-
-
-
 
     def find_solution(self):
         if len(self.goal_on) == 0 and len(self.goal_clear) == 0:
@@ -268,19 +251,25 @@ class BlockWorld:
 
         completed_moves = {}
         num_moves = 0
+        best_moves = math.inf
         status, moves, solution = self.find_shortest_path(self.init_clear, self.init_on, completed_moves,
-                                                          num_moves)
+                                                          num_moves, best_moves)
 
         if status == self.DONE:
-            print('Moves: ' + str(moves))
-            print('Solution:')
             items = list(solution.items())
             items.sort(key = lambda x: x[1])
-            for item in items:
-                print(item)
+            items = [tup[0] for tup in items]
+            self.print_solution(items)
         else:
-            print('Something definitely went wrong :(')
+            print('No solution found')
 
+    def print_solution(self, solution):
+        for item in solution:
+            split = item.split()
+            if split[0] == 'M':
+                print('Move(' + str(split[1]) + ', ' + str(split[2]) + ', ' + str(split[3]) + ')')
+            else:
+                print('MoveToTable(' + str(split[1]) + ', ' + str(split[2]) + ')')
 
     def test_goal_check(self):
         clear = set()
@@ -297,7 +286,7 @@ class BlockWorld:
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print("Usage: python3 blocks.py <input-file>")
+        print('Usage: python3 blocks.py <input-file>')
     else:
         bw = BlockWorld()
         bw.parse_input()
