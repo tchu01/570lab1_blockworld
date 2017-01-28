@@ -1,0 +1,12 @@
+INIT
+ON D Table
+ON C D
+ON B C
+ON A B
+CLEAR A
+GOAL
+ON B Table
+ON A B
+ON C Table
+ON D C
+CLEAR D
