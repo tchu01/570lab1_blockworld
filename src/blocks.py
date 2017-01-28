@@ -251,7 +251,7 @@ class BlockWorld:
 
         completed_moves = {}
         num_moves = 0
-        best_moves = math.inf
+        best_moves = float('inf')
         status, moves, solution = self.find_shortest_path(self.init_clear, self.init_on, completed_moves,
                                                           num_moves, best_moves)
 
